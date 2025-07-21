@@ -90,7 +90,7 @@ ansible-webserver/
 
 1.  **Clone the Repository**:
     ```bash
-    git clone [https://github.com/your-username/ansible-webserver.git](https://github.com/your-username/ansible-webserver.git)
+    git clone https://github.com/IndraVasek/Web-App-Deployment.git
     cd ansible-webserver
     ```
     (Replace `https://github.com/your-username/ansible-webserver.git` with your actual repository URL).
