@@ -93,7 +93,6 @@ ansible-webserver/
     git clone https://github.com/IndraVasek/Web-App-Deployment.git
     cd ansible-webserver
     ```
-    (Replace `https://github.com/your-username/ansible-webserver.git` with your actual repository URL).
 
 2.  **Prepare SSH Key**:
     Ensure your AWS private key (`.pem` file) is in your `~/.ssh/` directory on your Ansible control machine (WSL in this case) and has the correct permissions:
