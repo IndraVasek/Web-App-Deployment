@@ -1,0 +1,36 @@
+# roles/ufw/tasks/main.yml
+---
+- name: Install UFW
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+  become: yes
+
+- name: Set default deny incoming policy
+  community.general.ufw:
+    default: deny
+    direction: incoming
+  become: yes
+
+- name: Allow SSH (port 22)
+  community.general.ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+  become: yes
+
+- name: Allow HTTP (port 80)
+  community.general.ufw:
+    rule: allow
+    port: '80'
+    proto: tcp
+  become: yes
+
+- name: Enable UFW
+  community.general.ufw:
+    state: enabled
+    # The 'state: enabled' action often requires confirmation.
+    # Ansible's ufw module handles this interactively if not already enabled.
+    # If the VM is remote and SSH connection is not maintained on default port,
+    # enabling UFW might cut off connection. Ensure port 22 is allowed BEFORE enabling.
+  become: yes

@@ -1,0 +1,48 @@
+# roles/security_updates/tasks/main.yml
+---
+- name: Install unattended-upgrades
+  ansible.builtin.apt:
+    name: unattended-upgrades
+    state: present
+  become: yes
+
+- name: Configure unattended-upgrades to automatically apply security updates
+  ansible.builtin.blockinfile:
+    path: /etc/apt/apt.conf.d/20auto-upgrades
+    block: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    create: yes # Create the file if it doesn't exist
+    backup: yes
+  become: yes
+
+- name: Configure unattended-upgrades to enable security updates
+  ansible.builtin.lineinfile:
+    path: /etc/apt/apt.conf.d/50unattended-upgrades
+    regexp: '^(//)?Unattended-Upgrade::Allowed-Origins::\s*"${distro_id}:${distro_codename}-security";'
+    line: 'Unattended-Upgrade::Allowed-Origins:: "${distro_id}:${distro_codename}-security";'
+    backup: yes
+  become: yes
+
+- name: Install Fail2Ban
+  ansible.builtin.apt:
+    name: fail2ban
+    state: present
+  become: yes
+
+- name: Ensure Fail2Ban service is running and enabled
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Copy jail.local configuration for Fail2Ban (basic SSH protection)
+  ansible.builtin.copy:
+    src: jail.local # We'll create this file in roles/security_updates/files/
+    dest: /etc/fail2ban/jail.local
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  notify: Restart Fail2Ban

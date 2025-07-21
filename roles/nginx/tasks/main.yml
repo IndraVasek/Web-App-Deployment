@@ -1,0 +1,71 @@
+# roles/nginx/tasks/main.yml
+---
+- name: Install NGINX
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+  become: yes
+
+- name: Ensure /opt/static-sites directory exists
+  ansible.builtin.file:
+    path: /opt/static-sites
+    state: directory
+    owner: webapp # Ownership by webapp user 
+    group: webapp
+    mode: '0755'
+  become: yes
+
+- name: Generate custom index.html from template
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /opt/static-sites/index.html
+    owner: webapp # Ownership by webapp user 
+    group: webapp
+    mode: '0644'
+  become: yes
+
+#- name: Deploy custom NGINX configuration
+#  ansible.builtin.template:
+#    src: nginx.conf.j2
+#    dest: /etc/nginx/sites-available/default
+#    owner: root # NGINX config files are typically owned by root
+#    group: root
+#    mode: '0644'
+#  become: yes
+#  notify: Restart NGINX
+
+- name: Enable the new NGINX site by creating a symlink
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+    force: yes # Overwrite existing symlink if it points elsewhere
+  become: yes
+  notify: Reload NGINX
+
+- name: Remove default NGINX welcome page (optional, for tidiness)
+  ansible.builtin.file:
+    path: /var/www/html/index.nginx-debian.html
+    state: absent
+  become: yes
+
+- name: Deploy NGINX site configuration
+  template:
+    src: static-site.conf.j2
+    dest: /etc/nginx/sites-available/static-site
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart nginx
+
+- name: Enable the site by symlinking
+  file:
+    src: /etc/nginx/sites-available/static-site
+    dest: /etc/nginx/sites-enabled/static-site
+    state: link
+    force: true
+
+- name: Remove default site config if it exists
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent

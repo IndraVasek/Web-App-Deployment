@@ -1,0 +1,22 @@
+# roles/common/tasks/main.yml
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: yes
+
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: dist
+  become: yes
+
+- name: Create webapp user
+  ansible.builtin.user:
+    name: webapp
+    state: present
+    shell: /bin/bash
+    system: yes
+    create_home: yes
+  become: yes
+

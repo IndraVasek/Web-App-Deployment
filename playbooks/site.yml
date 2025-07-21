@@ -1,0 +1,35 @@
+# playbooks/site.yml
+---
+- name: Configure Web Server on EC2 Instance
+  hosts: webservers # This refers to the group defined in your inventory/hosts.ini
+  become: yes         # Run all tasks in this playbook with sudo privileges
+  gather_facts: yes   # Gather facts about the remote host (useful for conditional tasks)
+
+  pre_tasks:
+    - name: Ensure Python is installed (required for Ansible modules)
+      ansible.builtin.raw: sudo apt update && sudo apt install -y python3 python3-apt
+      args:
+        creates: /usr/bin/python3 # Only run if python3 is not found
+      changed_when: false # This task might not report changes correctly, so suppress the warning
+
+  roles:
+    - role: common
+    - role: ufw
+    - role: nginx
+    - role: ssh_security
+    - role: security_updates
+
+  post_tasks:
+    - name: Validate NGINX web server is accessible and serving correct content
+      ansible.builtin.uri:
+        url: "http://{{ ansible_default_ipv4.address }}" # Use the instance's public IP
+        method: GET
+        status_code: 200 # Expect a successful HTTP 200 response
+        return_content: yes # Retrieve the content of the page
+      register: web_check_result # Store the result of the URI call
+
+    - name: Assert that the web page contains expected content
+      ansible.builtin.assert:
+        that: "'Hello from Ansible NGINX!' in web_check_result.content" # Check for a unique string from your index.html
+        fail_msg: "Validation failed: Web page content does not contain 'Hello from Ansible NGINX!'."
+      run_once: true # This assertion only needs to run once, for simplicity

@@ -1,0 +1,19 @@
+# roles/security_updates/files/jail.local
+[DEFAULT]
+# Ban hosts for 10 minutes:
+bantime = 600
+
+# Override /etc/fail2ban/jail.d/00-firewalld.conf or /etc/fail2ban/jail.d/00-nftables.conf
+# by setting default backend.
+backend = systemd
+
+# Log level
+loglevel = INFO
+
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3 # Max failed attempts before banning
+bantime = 3600 # Ban for 1 hour for SSH attacks

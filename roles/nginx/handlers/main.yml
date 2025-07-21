@@ -1,0 +1,14 @@
+# roles/nginx/handlers/main.yml
+---
+- name: Restart nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: restarted
+    enabled: yes # Ensure it's enabled to start on boot
+  become: yes
+
+- name: Reload NGINX
+  ansible.builtin.systemd:
+    name: nginx
+    state: reloaded
+  become: yes

@@ -1,0 +1,6 @@
+---
+- name: Configure webserver with NGINX
+  hosts: webservers
+  become: yes
+  roles:
+    - webserver
